@@ -28,7 +28,7 @@ function App(){
  const [query,setQuery]=useState(''),[position,setPosition]=useState('All'),[group,setGroup]=useState('All'),[selected,setSelected]=useState(null),[compare,setCompare]=useState([]);
  const [status,setStatus]=useState(db?'等待数据库读取':'未配置 Supabase：展示示例名单'),[updated,setUpdated]=useState(null),[busy,setBusy]=useState(false),[errors,setErrors]=useState([]);
  async function load(){setBusy(true);const issues=[];let count=0;
-  if(db){const tasks=[['players',d=>{if(d.length){setPlayers(d.map(normPlayer));count++}else issues.push('players 表为空，仍显示示例名单')}],['matches',d=>{setFixtures(d);count++}],['standings',d=>{setStandings(d);count++}],['articles',d=>{setArticles(d);count++}],['club_history',d=>{setHistory(d);count++}]];
+  if(db){const tasks=[['players',d=>{if(d.length){setPlayers(d.map(normPlayer));count++}else issues.push('players 表为空，仍显示示例名单')}],['matches',d=>{setFixtures(d.filter(m=>m.season!=='TEST'));count++;}],['standings',d=>{setStandings(d);count++}],['articles',d=>{setArticles(d);count++}],['club_history',d=>{setHistory(d);count++}]];
    await Promise.all(tasks.map(async([table,apply])=>{try{const {data,error}=await db.from(table).select('*').limit(500);if(error)throw error;apply(data||[])}catch(e){issues.push(`${table} 读取失败：${e.message}`)}}));
   }else issues.push('未设置 VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY');
   setStatus(count?`已读取 ${count} 个数据库表`:'仅显示示例数据');setErrors(issues);setUpdated(new Date());setBusy(false);
