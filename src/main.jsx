@@ -34,7 +34,21 @@ function App(){
   setStatus(count?`已读取 ${count} 个数据库表`:'仅显示示例数据');setErrors(issues);setUpdated(new Date());setBusy(false);
  }
  useEffect(()=>{load();const t=setInterval(load,5*60*1000);return()=>clearInterval(t)},[]);
- const filtered=useMemo(()=>players.filter(p=>(`${p.name} ${p.number??''} ${p.position} ${p.nationality}`).toLowerCase().includes(query.toLowerCase())&&(position==='All'||p.position===position)&&(group==='All'||p.group===group)),[players,query,position,group]);
+ const filtered = useMemo(() => {
+  return players
+    .filter(p =>
+      (`${p.name} ${p.number ?? ''} ${p.position} ${p.nationality}`)
+        .toLowerCase()
+        .includes(query.toLowerCase()) &&
+      (position === 'All' || p.position === position) &&
+      (group === 'All' || p.group === group)
+    )
+    .sort((a, b) => {
+      const numA = a.number == null ? Infinity : Number(a.number);
+      const numB = b.number == null ? Infinity : Number(b.number);
+      return numA - numB;
+    });
+}, [players, query, position, group]);
  const sortedMatches=useMemo(()=>[...fixtures].sort((a,b)=>new Date(b.kickoff_at||0)-new Date(a.kickoff_at||0)),[fixtures]);
  const toggleCompare=p=>setCompare(v=>v.some(x=>x.id===p.id)?v.filter(x=>x.id!==p.id):v.length<2?[...v,p]:[v[1],p]);
  return <><header><div className="top"><div className="brand">CITY<span>WOMEN</span>HUB</div><span className="badge">非官方中文球迷项目</span></div><div className="hero"><div><div className="eyebrow">MANCHESTER CITY WOMEN · FAN DATABASE</div><h1>为蓝月亮<br/><em>记录每一刻。</em></h1><p>球员资料、比赛追踪、积分与历史档案。每条数据均区分已核验信息与演示内容。</p><div className="hero-actions"><button onClick={()=>{setTab('squad');setSelected(null)}}>探索球员档案 →</button><button className="ghost" onClick={()=>{setTab('fixtures');setSelected(null)}}>查看比赛中心</button></div></div><div className="hero-card"><small>数据库球员条目</small><strong>{players.length}</strong><span>{status}</span><small>最近读取：{updated?updated.toLocaleString('zh-CN'):'尚未读取'}</small></div></div></header>
